@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEX Pool Query</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #8b92a8;
+            font-size: 0.9rem;
+        }
+
+        .query-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .input-group {
+            flex: 1;
+        }
+
+        .input-group:nth-child(1) { flex: 0 0 140px; }
+        .input-group:nth-child(2) { flex: 0 0 120px; }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8b92a8;
+            margin-bottom: 6px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #667eea;
+        }
+
+        select option {
+            background: #1a1f3a;
+            color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #8b92a8;
+        }
+
+        .result-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 4px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #8b92a8;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 0.9rem;
+            color: #fff;
+            font-weight: 500;
+            text-align: right;
+            max-width: 65%;
+            word-break: break-all;
+        }
+
+        .token-pair {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .token-info {
+            flex: 1;
+        }
+
+        .token-symbol {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .token-address {
+            font-size: 0.75rem;
+            color: #8b92a8;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .divider {
+            font-size: 1.2rem;
+            color: #8b92a8;
+        }
+
+        .error {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            color: #ef4444;
+        }
+
+        .examples {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .examples h3 {
+            font-size: 0.9rem;
+            color: #8b92a8;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .example-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.85rem;
+        }
+
+        .example-label {
+            color: #8b92a8;
+            font-weight: 500;
+        }
+
+        .example-value {
+            font-family: 'SF Mono', monospace;
+            color: #667eea;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .input-row {
+                flex-direction: column;
+            }
+            
+            .input-group:nth-child(1),
+            .input-group:nth-child(2) {
+                flex: 1;
+            }
+
+            .info-item {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .info-value {
+                max-width: 100%;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 DEX Pool Query</h1>
+            <p>Query pool information across multiple DEXs and networks</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="query-section">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>DEX</label>
+                    <select id="dex">
+                        <option value="v2">V2</option>
+                        <option value="v3">V3</option>
+                        <option value="uniswapv4">Uniswap V4</option>
+                        <option value="pancakev4cl">Pancake V4 CL</option>
+                        <option value="pancakev4bin">Pancake V4 Bin</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Network</label>
+                    <select id="network">
+                        <option value="">Auto</option>
+                        <option value="ETH">Ethereum</option>
+                        <option value="BSC" selected>BSC</option>
+                        <option value="BASE">Base</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Pool Address / ID</label>
+                    <input type="text" id="poolId" placeholder="0x...">
+                </div>
+            </div>
+            <button onclick="queryPool()">Query Pool</button>
+        </div>
+
+        <div class="loading" id="loading">⏳ Loading...</div>
+
+        <div class="result-section" id="result">
+            <div class="result-header">
+                <h2 id="tokenPair">Token Pair</h2>
+                <div class="badge" id="networkBadge">Network</div>
+            </div>
+
+            <div class="token-pair">
+                <div class="token-info">
+                    <div class="token-symbol" id="token0Symbol"></div>
+                    <div class="token-address" id="token0Address"></div>
+                </div>
+                <div class="divider">⇄</div>
+                <div class="token-info">
+                    <div class="token-symbol" id="token1Symbol"></div>
+                    <div class="token-address" id="token1Address"></div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Pool ID / Address</span>
+                    <span class="info-value" id="poolIdResult"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">DEX</span>
+                    <span class="info-value" id="dexName"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fee</span>
+                    <span class="info-value" id="fee"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tick Spacing</span>
+                    <span class="info-value" id="tickSpacing"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Current Tick / Active ID</span>
+                    <span class="info-value" id="tick"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Liquidity / Reserves</span>
+                    <span class="info-value" id="liquidity"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Price</span>
+                    <span class="info-value" id="price"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Hooks</span>
+                    <span class="info-value" id="hooks"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="examples">
+            <h3>📝 Example Pool Addresses / IDs</h3>
+            <div class="example-item">
+                <span class="example-label">V2</span>
+                <span class="example-value">0x4351190e37788312036f29fb49d2bb985b0bb126</span>
+            </div>
+            <div class="example-item">
+                <span class="example-label">V3</span>
+                <span class="example-value">0x5ecebf93f9235347c4f44d4be56c46eef67b8279</span>
+            </div>
+            <div class="example-item">
+                <span class="example-label">Uniswap V4</span>
+                <span class="example-value">0x73b41de853cdbaaa9b536f6b0d6b787d753c17af7bf34a13f59b0396fe874d82</span>
+            </div>
+            <div class="example-item">
+                <span class="example-label">Pancake V4 CL</span>
+                <span class="example-value">0x48130f6eedfe2a3bad65fd0fd2987c2ca5317da9f054a9bcbfbd51cf26a140f8</span>
+            </div>
+            <div class="example-item">
+                <span class="example-label">Pancake V4 Bin</span>
+                <span class="example-value">0xb7dcd468ba90891583f5485e209d4334c79e2c017c836aa46209565b406fcdde</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load saved values on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedDex = localStorage.getItem('lastDex');
+            const savedNetwork = localStorage.getItem('lastNetwork');
+            const savedPoolId = localStorage.getItem('lastPoolId');
+            
+            if (savedDex) document.getElementById('dex').value = savedDex;
+            if (savedNetwork) document.getElementById('network').value = savedNetwork;
+            if (savedPoolId) document.getElementById('poolId').value = savedPoolId;
+        });
+
+        async function queryPool() {
+            const dex = document.getElementById('dex').value;
+            const network = document.getElementById('network').value;
+            const poolId = document.getElementById('poolId').value.trim();
+
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            if (!poolId) {
+                showError('Please enter a Pool ID or Address');
+                return;
+            }
+
+            localStorage.setItem('lastDex', dex);
+            localStorage.setItem('lastNetwork', network);
+            localStorage.setItem('lastPoolId', poolId);
+
+            try {
+                const url = network 
+                    ? `/api/pool/${dex}/${network}/${poolId}`
+                    : `/api/pool/${dex}/${poolId}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!response.ok) {
+                    showError(data.error || 'Failed to query pool');
+                    return;
+                }
+
+                displayResult(data);
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                showError('Error: ' + error.message);
+            }
+        }
+
+        function displayResult(data) {
+            document.getElementById('tokenPair').textContent = `${data.token0.symbol} / ${data.token1.symbol}`;
+            document.getElementById('networkBadge').textContent = data.network;
+            
+            document.getElementById('token0Symbol').textContent = data.token0.symbol;
+            document.getElementById('token0Address').textContent = data.token0.address;
+            
+            document.getElementById('token1Symbol').textContent = data.token1.symbol;
+            document.getElementById('token1Address').textContent = data.token1.address;
+            
+            document.getElementById('poolIdResult').textContent = data.poolId || data.poolAddress || 'N/A';
+            document.getElementById('dexName').textContent = data.dex;
+            document.getElementById('fee').textContent = data.fee !== undefined ? data.fee : 'N/A';
+            document.getElementById('tickSpacing').textContent = data.tickSpacing || 'N/A';
+            document.getElementById('tick').textContent = data.state?.tick !== undefined ? data.state.tick : (data.state?.activeId || 'N/A');
+            
+            const liquidityText = data.state?.liquidity || 
+                (data.reserves ? `R0: ${data.reserves.reserve0.substring(0, 15)}... / R1: ${data.reserves.reserve1.substring(0, 15)}...` : 'N/A');
+            document.getElementById('liquidity').textContent = liquidityText;
+            
+            document.getElementById('price').textContent = data.state?.priceFormatted || data.priceFormatted || 'N/A';
+            document.getElementById('hooks').textContent = data.hooks || 'N/A';
+
+            document.getElementById('result').classList.add('show');
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        document.getElementById('poolId').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') queryPool();
+        });
+    </script>
+</body>
+</html>
