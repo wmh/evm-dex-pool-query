@@ -70,6 +70,32 @@ const NETWORKS = {
         quoter: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
       }
     }
+  },
+  MONAD: {
+    name: 'Monad',
+    chainId: 143,
+    rpc: 'https://rpc1.monad.xyz',
+    explorer: 'https://monadvision.com',
+    dex: {
+      uniswapV2: {
+        factory: '0x182a927119d56008d921126764bf884221b10f59'
+      },
+      uniswapV3: {
+        factory: '0x204faca1764b154221e35c0d20abb3c525710498',
+        quoter: '0x0393c0Bc9Fa2b8307396a565C5B14C4Ee285A11f'
+      },
+      uniswapV4: {
+        poolManager: '0x188d586ddcf52439676ca21a244753fa19f9ea8e',
+        stateView: '0x77395f3b2e73ae90843717371294fa97cc419d64'
+      },
+      pancakeV2: {
+        factory: '0x02a84c1b3bbd7401a5f7fa98a384ebc70bb5749e'
+      },
+      pancakeV3: {
+        factory: '0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865',
+        quoter: '0x0393c0Bc9Fa2b8307396a565C5B14C4Ee285A11f'
+      }
+    }
   }
 };
 
