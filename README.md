@@ -89,8 +89,27 @@ GET /api/pool/uniswapv4/BASE/0xa1e7d3925f6603ec872cadbb151ddd0cbe6749ee5a7ac62de
 
 Parameters:
 - `dex`: `uniswapv4` or `pancakev4`
-- `network`: `BASE`, `BSC`, or `ETH`
+- `network`: `BASE`, `BSC`, `ETH`, or `MONAD`
 - `poolId`: Pool ID (32 bytes hex string)
+
+### Query Transaction
+
+Get transaction details on a specific network:
+```
+GET /api/transaction/:network/:txHash
+```
+
+Query transaction across all networks:
+```
+GET /api/transaction/:txHash
+```
+
+Example:
+```
+GET /api/transaction/MONAD/0x1234567890abcdef...
+```
+
+**Note:** Transaction hashes and pool IDs are both 32-byte hex values. The API automatically detects if you're trying to use a transaction hash as a pool ID and provides helpful error messages.
 
 ## Response Format
 
@@ -152,6 +171,13 @@ Parameters:
 - ✅ Uniswap V4
 - ✅ Uniswap V3
 
+### Monad (Chain ID: 143)
+- ✅ Uniswap V4
+- ✅ Uniswap V3
+- ✅ Uniswap V2
+- ✅ PancakeSwap V3
+- ✅ PancakeSwap V2
+
 ## Example Pool IDs / Addresses
 
 ### Uniswap
@@ -171,8 +197,9 @@ evm-dex-pool-query/
 │   ├── networks.js    # Network configurations
 │   └── abis.js        # Smart contract ABIs
 ├── services/
-│   ├── uniswapV4Service.js    # Uniswap V4 logic
-│   └── pancakeV4Service.js    # PancakeSwap V4 logic
+│   ├── uniswapV4Service.js       # Uniswap V4 logic
+│   ├── pancakeV4Service.js       # PancakeSwap V4 logic
+│   └── transactionService.js     # Transaction lookup
 ├── routes/
 │   └── poolRoutes.js  # API routes
 ├── public/

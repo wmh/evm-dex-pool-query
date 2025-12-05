@@ -6,6 +6,7 @@ const uniswapV3Service = require('../services/uniswapV3Service');
 const pancakeV4CLService = require('../services/pancakeV4CLService');
 const pancakeV4BinService = require('../services/pancakeV4BinService');
 const pancakeV3Service = require('../services/pancakeV3Service');
+const transactionService = require('../services/transactionService');
 const { NETWORKS } = require('../config/networks');
 
 // Get pool info by DEX type and pool ID
@@ -18,6 +19,16 @@ router.get('/pool/:dex/:network/:poolId', async (req, res) => {
       return res.status(400).json({ 
         error: 'Invalid network', 
         availableNetworks: Object.keys(NETWORKS) 
+      });
+    }
+
+    // Check if poolId is actually a transaction hash
+    if (transactionService.isTransactionHash(poolId)) {
+      return res.status(400).json({ 
+        error: 'Invalid pool ID', 
+        message: 'The provided value appears to be a transaction hash, not a pool ID. Pool IDs should be 32-byte identifiers.',
+        providedValue: poolId,
+        hint: 'Use /api/transaction/:network/:txHash to query transaction details'
       });
     }
 
@@ -162,6 +173,37 @@ router.get('/supported', (req, res) => {
       'pancakev3'
     ]
   });
+});
+
+// Get transaction details
+router.get('/transaction/:network/:txHash', async (req, res) => {
+  try {
+    const { network, txHash } = req.params;
+    
+    const networkKey = network.toUpperCase();
+    if (!NETWORKS[networkKey]) {
+      return res.status(400).json({ 
+        error: 'Invalid network', 
+        availableNetworks: Object.keys(NETWORKS) 
+      });
+    }
+
+    const result = await transactionService.getTransaction(txHash, networkKey);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get transaction details across all networks
+router.get('/transaction/:txHash', async (req, res) => {
+  try {
+    const { txHash } = req.params;
+    const result = await transactionService.getTransactionAcrossNetworks(txHash);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

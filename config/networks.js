@@ -86,6 +86,7 @@ const NETWORKS = {
       },
       uniswapV4: {
         poolManager: '0x188d586ddcf52439676ca21a244753fa19f9ea8e',
+        quoterV2: '0x0393c0Bc9Fa2b8307396a565C5B14C4Ee285A11f',
         stateView: '0x77395f3b2e73ae90843717371294fa97cc419d64'
       },
       pancakeV2: {
