@@ -62,7 +62,7 @@ const NETWORKS = {
     dex: {
       uniswapV4: {
         poolManager: '0x000000000004444c5dc75cB358380D2e3dE08A90',
-        quoterV2: '0xfbfa5E81F0EbB59e22A9F64b5Da61FcB67A833c1',
+        quoterV2: '0x210e55C38c8D3E2803B9bFE37DFD3158e6f8e0f9',
         stateView: '0x7ffe42c4a5deea5b0fec41c94c136cf115597227'
       },
       uniswapV3: {

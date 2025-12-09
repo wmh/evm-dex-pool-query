@@ -22,16 +22,6 @@ router.get('/pool/:dex/:network/:poolId', async (req, res) => {
       });
     }
 
-    // Check if poolId is actually a transaction hash
-    if (transactionService.isTransactionHash(poolId)) {
-      return res.status(400).json({ 
-        error: 'Invalid pool ID', 
-        message: 'The provided value appears to be a transaction hash, not a pool ID. Pool IDs should be 32-byte identifiers.',
-        providedValue: poolId,
-        hint: 'Use /api/transaction/:network/:txHash to query transaction details'
-      });
-    }
-
     let result;
     switch (dex.toLowerCase()) {
       case 'v2':
