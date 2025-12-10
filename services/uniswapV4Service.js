@@ -1,5 +1,5 @@
 const { ethers } = require('ethers');
-const { QUOTER_V2_ABI, STATE_VIEW_ABI, ERC20_ABI } = require('../config/abis');
+const { QUOTER_V2_ABI, QUOTER_ETH_ABI, STATE_VIEW_ABI, ERC20_ABI } = require('../config/abis');
 const { NETWORKS } = require('../config/networks');
 
 class UniswapV4Service {
@@ -39,9 +39,12 @@ class UniswapV4Service {
     }
 
     const provider = new ethers.JsonRpcProvider(networkConfig.rpc);
+    const isEthereum = network === 'ETH';
+    const quoterABI = isEthereum ? QUOTER_ETH_ABI : QUOTER_V2_ABI;
+    
     const quoter = new ethers.Contract(
       networkConfig.dex.uniswapV4.quoterV2,
-      QUOTER_V2_ABI,
+      quoterABI,
       provider
     );
     const stateView = new ethers.Contract(
@@ -58,12 +61,25 @@ class UniswapV4Service {
         return null;
       }
 
-      const [slot0, liquidity, token0Info, token1Info] = await Promise.all([
-        stateView.getSlot0(poolId),
-        stateView.getLiquidity(poolId),
+      const [token0Info, token1Info] = await Promise.all([
         this.getTokenInfo(poolKey.currency0, provider),
         this.getTokenInfo(poolKey.currency1, provider)
       ]);
+
+      let slot0, liquidity, reserves;
+      
+      if (isEthereum) {
+        [slot0, liquidity, reserves] = await Promise.all([
+          stateView.getSlot0(poolId),
+          stateView.getLiquidity(poolId),
+          quoter.getUniswapV4PoolReserve(poolKey)
+        ]);
+      } else {
+        [slot0, liquidity] = await Promise.all([
+          stateView.getSlot0(poolId),
+          stateView.getLiquidity(poolId)
+        ]);
+      }
 
       const price = this.calculatePrice(
         slot0.sqrtPriceX96,
@@ -71,7 +87,7 @@ class UniswapV4Service {
         token1Info.decimals
       );
 
-      return {
+      const result = {
         network: networkConfig.name,
         dex: 'Uniswap V4',
         poolId: poolId,
@@ -107,6 +123,13 @@ class UniswapV4Service {
         },
         explorer: `${networkConfig.explorer}/address/${poolKey.currency0}`
       };
+
+      if (isEthereum && reserves) {
+        result.state.reserve0 = reserves.reserve0.toString();
+        result.state.reserve1 = reserves.reserve1.toString();
+      }
+
+      return result;
 
     } catch (error) {
       throw new Error(`Failed to query Uniswap V4 pool: ${error.message}`);

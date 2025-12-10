@@ -39,6 +39,54 @@ const QUOTER_V2_ABI = [
   }
 ];
 
+const QUOTER_ETH_ABI = [
+  {
+    "type": "function",
+    "name": "getPoolKey",
+    "inputs": [
+      {"name": "poolId", "type": "bytes32", "internalType": "bytes32"}
+    ],
+    "outputs": [
+      {
+        "name": "poolKey",
+        "type": "tuple",
+        "internalType": "struct IPoolManager.PoolKey",
+        "components": [
+          {"name": "currency0", "type": "address", "internalType": "address"},
+          {"name": "currency1", "type": "address", "internalType": "address"},
+          {"name": "fee", "type": "uint24", "internalType": "uint24"},
+          {"name": "tickSpacing", "type": "int24", "internalType": "int24"},
+          {"name": "hooks", "type": "address", "internalType": "address"}
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getUniswapV4PoolReserve",
+    "inputs": [
+      {
+        "name": "poolKey",
+        "type": "tuple",
+        "internalType": "struct IPoolManager.PoolKey",
+        "components": [
+          {"name": "currency0", "type": "address", "internalType": "address"},
+          {"name": "currency1", "type": "address", "internalType": "address"},
+          {"name": "fee", "type": "uint24", "internalType": "uint24"},
+          {"name": "tickSpacing", "type": "int24", "internalType": "int24"},
+          {"name": "hooks", "type": "address", "internalType": "address"}
+        ]
+      }
+    ],
+    "outputs": [
+      {"name": "reserve0", "type": "uint256", "internalType": "uint256"},
+      {"name": "reserve1", "type": "uint256", "internalType": "uint256"}
+    ],
+    "stateMutability": "view"
+  }
+];
+
 const STATE_VIEW_ABI = [
   {
     "inputs": [{"internalType": "bytes32", "name": "poolId", "type": "bytes32"}],
@@ -182,6 +230,7 @@ const ERC20_ABI = [
 module.exports = {
   POOL_MANAGER_ABI,
   QUOTER_V2_ABI,
+  QUOTER_ETH_ABI,
   STATE_VIEW_ABI,
   PANCAKE_CL_POOL_MANAGER_ABI,
   PANCAKE_BIN_POOL_MANAGER_ABI,
